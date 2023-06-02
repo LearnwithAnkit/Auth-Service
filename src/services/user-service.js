@@ -46,6 +46,26 @@ class UserService {
       throw { error };
     }
   }
+  async signIn(email, plainPassword) {
+    try {
+      //step 1:fetch the ser using the email
+      const user = await this.userRepository.getByEmail(email);
+      //step 2: compare incoming plane password with stored encrypted password
+      const passwordMatch = this.checkPassword(plainPassword, user.password);
+      if (!passwordMatch) {
+        console.log("Password doesn't match");
+        throw { error: "Incorrect PAssword" };
+      }
+      const newJwt = this.createToken({
+        email: user.email,
+        password: user.password,
+      });
+      return newJwt;
+    } catch (error) {
+      console.log("Something went wrong in the service layer");
+      throw error;
+    }
+  }
   checkPassword(userInputPlainPassword, encyrptedPassword) {
     try {
       return bcrypt.compareSync(userInputPlainPassword, encyrptedPassword);
